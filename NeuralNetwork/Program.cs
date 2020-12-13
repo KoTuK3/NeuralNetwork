@@ -35,6 +35,11 @@ namespace NeuralNetwork
         }
 
         // Activation functions
+        public double Linear(double x)
+        {
+            return x;
+        }
+
         public double Sigmoid(double x)
         {
             return 1 / (1 + Math.Exp(-x));
@@ -49,6 +54,10 @@ namespace NeuralNetwork
         public double SigmoidDerivative(double x)
         {
             return Sigmoid(x) * (1 - Sigmoid(x));
+        }
+        public double ReLUDerivative(double x)
+        {
+            return x <= 0 ? 0 : 1;
         }
 
         public double[] GetDelta()
@@ -93,6 +102,11 @@ namespace NeuralNetwork
             Console.WriteLine("Results: ");
 
             var temp = inputMatrix;
+
+            //Test
+            Matrix.Print(temp);
+            Console.WriteLine();
+
             for (int i = 0; i < Weights.Count; i++)
             {
                 temp = Matrix.Multiply(Weights[i], temp);
@@ -101,14 +115,16 @@ namespace NeuralNetwork
                 Matrix.Print(temp);
                 Console.WriteLine();
 
-                Normalize(temp, ReLU);
+                Normalize(temp, Linear);
             }
 
             _output = temp;
 
             return temp;
         }
-
+        // Test
+        public double N { get; set; } = 0.05;
+        public List<double[,]> Deltas { get; set; } = new List<double[,]>();
         public void Backpropagation()
         {
             var expectedResult = new double[ExpectedResult.Length, 1];
@@ -120,69 +136,80 @@ namespace NeuralNetwork
 
             var delta = new double[ExpectedResult.Length, 1];
 
+
             for (int i = 0; i < delta.GetLength(0); i++)
             {
-                delta[i, 0] = expectedResult[i, 0] - _output[i, 0];
+                delta[i, 0] = _output[i, 0] - expectedResult[i, 0];
             }
 
             var temp = delta;
+            Deltas.Add(temp);
 
-            Console.WriteLine("Backpropagation");
-            for (int i = Weights.Count - 1; i >= 0; i--)
+            // TODO i > 0 or i >= 0
+            for (int i = Weights.Count - 1; i > 0; i--)
             {
                 temp = Matrix.Multiply(temp, Weights[i]);
-
-                //Test
-                Matrix.Print(temp);
-                Console.WriteLine();
-
+                Deltas.Add(temp);
+                
                 //Normalize(temp, ReLU);
+            }
+
+            //Test
+            Console.WriteLine("\n===Backpropagation===\n");
+            //Print Deltas
+            Console.WriteLine("Deltas");
+            foreach (var item in Deltas)
+            {
+                Matrix.Print(item);
+                Console.WriteLine();
             }
 
             _output = temp;
         }
     }
 
-
     class Program
     {
         static void Main(string[] args)
         {
+
+            // Weights matrix
+            // Columns - input nodes(left)
+            // Rows - output nodes(right)
             var nn = new NeuralNetwork();
 
-            nn.SizeOfLayers = new int[] { 2, 3, 1 };
+            nn.SizeOfLayers = new int[] { 2, 2, 1 };
 
-            nn.InputLayer = new double[] { 1, 2 };
+            nn.InputLayer = new double[] { 2, 3 };
 
-            nn.OutputLayer = new double[] { 0.7 };
+            //nn.OutputLayer = new double[] { 1 };
 
-            nn.ExpectedResult = new double[] { 0.5 };
-
-
+            nn.ExpectedResult = new double[] { 1 };
 
             //nn.GenerateMatrix();
 
             nn.Weights.Add(new double[,] {
-                {  1,  3 },
-                { -1,  2 },
-                { -3, -2 }
+                { 0.11, 0.21 },
+                { 0.12, 0.08 },
             });
 
             nn.Weights.Add(new double[,] {
-                { 0.3, 0.4, 0.3 }
+                { 0.14, 0.15 }
             });
 
+            Console.WriteLine("Weights:");
             nn.PrintWeights();
 
             var result = nn.GetResult();
             Console.WriteLine("Generation - 1");
+            Console.WriteLine("Result:");
             Matrix.Print(result);
 
             nn.Backpropagation();
 
-            Console.WriteLine("Generation - 2");
-            result = nn.GetResult();
-            Matrix.Print(result);
+            //Console.WriteLine("Generation - 2");
+            //result = nn.GetResult();
+            //Matrix.Print(result);
 
             //var matrix = new double[,]
             //{
