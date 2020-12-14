@@ -121,66 +121,85 @@ namespace NeuralNetwork
 
                 if (i < Weights.Count - 1)
                     Results.Add(temp);
-                else
-                    Results.Add(new double[,] { { 1 } });
 
-                Normalize(temp, Linear);
+                Normalize(temp, Sigmoid);
             }
 
             _output = temp;
-
-            var alpha = N * _output[0, 0];
-
-            for (int i = Weights.Count; i >= 10; i--)
-            {
-
-            }
 
             return temp;
         }
         // Test
-        public double N { get; set; } = 0.05;
+        public double N { get; set; } = 0.1;
         public List<double[,]> Deltas { get; set; } = new List<double[,]>();
+        //public void Backpropagation()
+        //{
+        //    var expectedResult = new double[ExpectedResult.Length, 1];
+
+        //    for (int i = 0; i < ExpectedResult.Length; i++)
+        //    {
+        //        expectedResult[i, 0] = ExpectedResult[i];
+        //    }
+
+        //    var delta = new double[ExpectedResult.Length, 1];
+
+
+        //    for (int i = 0; i < delta.GetLength(0); i++)
+        //    {
+        //        delta[i, 0] = _output[i, 0] - expectedResult[i, 0];
+        //    }
+
+        //    var temp = delta;
+        //    Deltas.Add(temp);
+
+        //    // TODO i > 0 or i >= 0
+        //    for (int i = Weights.Count - 1; i > 0; i--)
+        //    {
+        //        temp = Matrix.Multiply(temp, Weights[i]);
+        //        Deltas.Add(temp);
+
+        //        //Normalize(temp, ReLU);
+        //    }
+
+        //    //Test
+        //    Console.WriteLine("\n===Backpropagation===\n");
+        //    //Print Deltas
+        //    Console.WriteLine("Deltas");
+        //    foreach (var item in Deltas)
+        //    {
+        //        Matrix.Print(item);
+        //        Console.WriteLine();
+        //    }
+
+        //    _output = temp;
+        //}
         public void Backpropagation()
         {
-            var expectedResult = new double[ExpectedResult.Length, 1];
+            // Test
+            var delta = _output[0, 0] - 1;
+            var alpha = N * delta;
+            var newWeights = new List<double[,]>();
 
-            for (int i = 0; i < ExpectedResult.Length; i++)
+            for (int i = Weights.Count - 1; i >= 0; i--)
             {
-                expectedResult[i, 0] = ExpectedResult[i];
+                var trans = Matrix.Transpose(Results[i]);
+                var temp = Matrix.Multiply(trans, alpha);
+
+                if (i + 1 <= Weights.Count - 1)
+                {
+                    trans = Matrix.Transpose(Weights[i + 1]);
+                    temp = Matrix.Multiply(trans, temp);
+                }
+
+                var res = Matrix.Sub(Weights[i], temp);
+
+                newWeights.Add(res);
             }
 
-            var delta = new double[ExpectedResult.Length, 1];
-
-
-            for (int i = 0; i < delta.GetLength(0); i++)
+            for (int i = newWeights.Count - 1; i >= 0; i--)
             {
-                delta[i, 0] = _output[i, 0] - expectedResult[i, 0];
+                Matrix.Copy(Weights[newWeights.Count - 1 - i], newWeights[i]);
             }
-
-            var temp = delta;
-            Deltas.Add(temp);
-
-            // TODO i > 0 or i >= 0
-            for (int i = Weights.Count - 1; i > 0; i--)
-            {
-                temp = Matrix.Multiply(temp, Weights[i]);
-                Deltas.Add(temp);
-                
-                //Normalize(temp, ReLU);
-            }
-
-            //Test
-            Console.WriteLine("\n===Backpropagation===\n");
-            //Print Deltas
-            Console.WriteLine("Deltas");
-            foreach (var item in Deltas)
-            {
-                Matrix.Print(item);
-                Console.WriteLine();
-            }
-
-            _output = temp;
         }
     }
 
@@ -213,27 +232,19 @@ namespace NeuralNetwork
                 { 0.14, 0.15 }
             });
 
-            Console.WriteLine("Weights:");
-            nn.PrintWeights();
+            for (int i = 0; i < 100; i++)
+            {
+                Console.WriteLine($"\n=== Generation - {i + 1} ===\n");
 
-            var result = nn.GetResult();
-            Console.WriteLine("Generation - 1");
-            Console.WriteLine("Result:");
-            Matrix.Print(result);
+                Console.WriteLine("Weights:");
+                nn.PrintWeights();
 
-            nn.Backpropagation();
+                var result = nn.GetResult();
+                Console.WriteLine("Result:");
+                Matrix.Print(result);
 
-            //Console.WriteLine("Generation - 2");
-            //result = nn.GetResult();
-            //Matrix.Print(result);
-
-            //var matrix = new double[,]
-            //{
-            //    { 1,2,3 },
-            //    { 4,5,6 },
-            //    { 7,8,9 },
-            //};
-            //Console.WriteLine(matrix);
+                nn.Backpropagation();
+            }
         }
     }
 }
