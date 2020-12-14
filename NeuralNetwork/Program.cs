@@ -17,6 +17,8 @@ namespace NeuralNetwork
 
         public List<double[,]> Weights { get; set; } = new List<double[,]>();
 
+        public List<double[,]> Results { get; set; } = new List<double[,]>();
+
         public void GenerateMatrix()
         {
             for (int i = 0; i < SizeOfLayers.Length - 1; i++)
@@ -107,6 +109,8 @@ namespace NeuralNetwork
             Matrix.Print(temp);
             Console.WriteLine();
 
+            Results.Add(inputMatrix);
+
             for (int i = 0; i < Weights.Count; i++)
             {
                 temp = Matrix.Multiply(Weights[i], temp);
@@ -115,10 +119,22 @@ namespace NeuralNetwork
                 Matrix.Print(temp);
                 Console.WriteLine();
 
+                if (i < Weights.Count - 1)
+                    Results.Add(temp);
+                else
+                    Results.Add(new double[,] { { 1 } });
+
                 Normalize(temp, Linear);
             }
 
             _output = temp;
+
+            var alpha = N * _output[0, 0];
+
+            for (int i = Weights.Count; i >= 10; i--)
+            {
+
+            }
 
             return temp;
         }
