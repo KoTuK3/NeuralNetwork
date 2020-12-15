@@ -120,9 +120,10 @@ namespace NeuralNetwork
                 Console.WriteLine();
 
                 if (i < Weights.Count - 1)
+                {
                     Results.Add(temp);
-
-                Normalize(temp, Sigmoid);
+                    Normalize(temp, Sigmoid);
+                }
             }
 
             _output = temp;
@@ -130,7 +131,7 @@ namespace NeuralNetwork
             return temp;
         }
         // Test
-        public double N { get; set; } = 0.1;
+        public double N { get; set; } = 0.05; // Learning rate
         public List<double[,]> Deltas { get; set; } = new List<double[,]>();
         //public void Backpropagation()
         //{
@@ -173,11 +174,25 @@ namespace NeuralNetwork
 
         //    _output = temp;
         //}
+
+        private double _delta;
+        private double _error = 0.01;
+        public void Training()
+        {
+            int i = 1;
+            while (Math.Abs(ExpectedResult[0] - _output[0, 0]) > _error && i < 100)
+            {
+                Console.WriteLine($"\n=== Generation - {i++} ===\n");
+                Backpropagation();
+                Console.WriteLine($"Res: {GetResult()[0, 0]}");
+            }
+        }
+
         public void Backpropagation()
         {
             // Test
-            var delta = _output[0, 0] - 1;
-            var alpha = N * delta;
+            _delta = _output[0, 0] - ExpectedResult[0];
+            var alpha = N * _delta;
             var newWeights = new List<double[,]>();
 
             for (int i = Weights.Count - 1; i >= 0; i--)
@@ -188,6 +203,7 @@ namespace NeuralNetwork
                 if (i + 1 <= Weights.Count - 1)
                 {
                     trans = Matrix.Transpose(Weights[i + 1]);
+                    // trans = Matrix.Change(trans, SigmoidDerivative);
                     temp = Matrix.Multiply(trans, temp);
                 }
 
@@ -219,32 +235,52 @@ namespace NeuralNetwork
 
             //nn.OutputLayer = new double[] { 1 };
 
-            nn.ExpectedResult = new double[] { 1 };
+            nn.ExpectedResult = new double[] { 5 };
 
             //nn.GenerateMatrix();
 
-            nn.Weights.Add(new double[,] {
-                { 0.11, 0.21 },
-                { 0.12, 0.08 },
-            });
+            //nn.Weights.Add(new double[,] {
+            //    { 0.11, 0.21 },
+            //    { 0.12, 0.08 },
+            //});
 
-            nn.Weights.Add(new double[,] {
-                { 0.14, 0.15 }
-            });
+            //nn.Weights.Add(new double[,] {
+            //    { 0.14, 0.15 }
+            //});
 
-            for (int i = 0; i < 100; i++)
-            {
-                Console.WriteLine($"\n=== Generation - {i + 1} ===\n");
+            nn.GenerateMatrix();
 
-                Console.WriteLine("Weights:");
-                nn.PrintWeights();
+            Console.WriteLine("=== Data - 1 ===");
 
-                var result = nn.GetResult();
-                Console.WriteLine("Result:");
-                Matrix.Print(result);
+            nn.InputLayer = new double[] { 2, 3 };
+            nn.ExpectedResult = new double[] { 5 };
 
-                nn.Backpropagation();
-            }
+            Console.WriteLine($"Res: {nn.GetResult()[0,0]}");
+            nn.Training();
+
+            Console.WriteLine($"Res: {nn.GetResult()[0, 0]}");
+
+
+
+
+            Console.WriteLine("=== Data - 2 ===");
+
+            nn.InputLayer = new double[] { 3, 3 };
+            nn.ExpectedResult = new double[] { 6 };
+
+            Console.WriteLine($"Res: {nn.GetResult()[0, 0]}");
+            nn.Training();
+            Console.WriteLine($"Res: {nn.GetResult()[0, 0]}");
+
+
+            nn.InputLayer = new double[] { 2, 3 };
+            Console.WriteLine($"Res Main: {nn.GetResult()[0, 0]}");
+
+            nn.InputLayer = new double[] { 2, 3 };
+            Console.WriteLine($"Res main: {nn.GetResult()[0, 0]}");
+
+
+
         }
     }
 }

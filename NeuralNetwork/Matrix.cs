@@ -123,6 +123,24 @@ namespace NeuralNetwork
             }
         }
 
+        static public double[,] Change(double[,] matrix, Func<double, double> func)
+        {
+            if (matrix == null)
+                throw new ArgumentNullException();
+
+            var res = new double[matrix.GetLength(0), matrix.GetLength(1)];
+
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    res[i, j] = func(matrix[i, j]);
+                }
+            }
+
+            return res;
+        }
+
         static public void Print(double[,] matrix)
         {
             for (int i = 0; i < matrix.GetLength(0); i++)
