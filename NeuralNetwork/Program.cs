@@ -15,9 +15,9 @@ namespace NeuralNetwork
         public double[] ExpectedResult { get; set; }
 
 
-        public List<double[,]> Weights { get; set; } = new List<double[,]>();
+        public List<Matrix> Weights { get; set; } = new List<Matrix>();
 
-        public List<double[,]> Results { get; set; } = new List<double[,]>();
+        public List<Matrix> Results { get; set; } = new List<Matrix>();
 
         public void GenerateMatrix()
         {
@@ -31,7 +31,7 @@ namespace NeuralNetwork
         {
             foreach (var item in Weights)
             {
-                Matrix.Print(item);
+                Console.WriteLine(item);
                 Console.WriteLine();
             }
         }
@@ -79,20 +79,20 @@ namespace NeuralNetwork
             throw new Exception("Different size of output array and expected array");
         }
 
-        public void Normalize(double[,] args, Func<double, double> func)
+        public void Normalize(Matrix args, Func<double, double> func)
         {
-            for (int i = 0; i < args.Length; i++)
+            for (int i = 0; i < args.Height; i++)
             {
                 args[i, 0] = func(args[i, 0]);
             }
         }
 
-        private double[,] _input;
-        private double[,] _output;
+        private Matrix _input;
+        private Matrix _output;
 
-        public double[,] GetResult()
+        public Matrix GetResult()
         {
-            var inputMatrix = new double[InputLayer.Length, 1];
+            var inputMatrix = new Matrix(new double[InputLayer.Length, 1]);
 
             for (int i = 0; i < InputLayer.Length; i++)
             {
@@ -106,17 +106,17 @@ namespace NeuralNetwork
             var temp = inputMatrix;
 
             //Test
-            Matrix.Print(temp);
+            Console.WriteLine(temp);
             Console.WriteLine();
 
             Results.Add(inputMatrix);
 
             for (int i = 0; i < Weights.Count; i++)
             {
-                temp = Matrix.Multiply(Weights[i], temp);
+                temp = Weights[i] * temp;
 
                 //Test
-                Matrix.Print(temp);
+                Console.WriteLine(temp);
                 Console.WriteLine();
 
                 if (i < Weights.Count - 1)
@@ -193,21 +193,21 @@ namespace NeuralNetwork
             // Test
             _delta = _output[0, 0] - ExpectedResult[0];
             var alpha = N * _delta;
-            var newWeights = new List<double[,]>();
+            var newWeights = new List<Matrix>();
 
             for (int i = Weights.Count - 1; i >= 0; i--)
             {
                 var trans = Matrix.Transpose(Results[i]);
-                var temp = Matrix.Multiply(trans, alpha);
+                var temp = trans * alpha;
 
                 if (i + 1 <= Weights.Count - 1)
                 {
                     trans = Matrix.Transpose(Weights[i + 1]);
                     // trans = Matrix.Change(trans, SigmoidDerivative);
-                    temp = Matrix.Multiply(trans, temp);
+                    temp = trans * temp;
                 }
 
-                var res = Matrix.Sub(Weights[i], temp);
+                var res = Weights[i] - temp;
 
                 newWeights.Add(res);
             }
@@ -278,9 +278,6 @@ namespace NeuralNetwork
 
             nn.InputLayer = new double[] { 2, 3 };
             Console.WriteLine($"Res main: {nn.GetResult()[0, 0]}");
-
-
-
         }
     }
 }
